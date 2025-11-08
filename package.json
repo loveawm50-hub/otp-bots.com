@@ -1,0 +1,9 @@
+{
+  "name": "otp-bots-root",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm install --prefix server",
+    "start": "npm run start --prefix server"
+  }
+}
+
