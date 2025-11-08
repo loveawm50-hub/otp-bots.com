@@ -46,7 +46,11 @@ const configValue = (envKey, fallbackPath, defaultValue) => {
 };
 
 const app = express();
-app.use(express.json());
+app.use(express.json({
+  verify: (req, _res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
 const CLIENT_ROOT = path.resolve(__dirname, '../../');
 app.use(express.static(CLIENT_ROOT, { extensions: ['html'] }));
@@ -83,16 +87,19 @@ const activationKeys = new Map(); // key -> { chatId, packageId, expiresAt }
 /**
  * Utility to verify OxaPay signature if you configured a callback secret.
  */
-function verifyOxaPaySignature(payload, providedSignature) {
-  if (!OXAPAY_CALLBACK_SECRET) {
+function verifyOxaPaySignature(rawBody, providedSignature) {
+  if (!providedSignature) {
     return true;
   }
-  const payloadString = JSON.stringify(payload);
-  const hmac = crypto
-    .createHmac('sha256', OXAPAY_CALLBACK_SECRET)
-    .update(payloadString)
+  const secret = OXAPAY_CALLBACK_SECRET || OXAPAY_API_KEY;
+  if (!secret) {
+    return true;
+  }
+  const digest = crypto
+    .createHmac('sha512', secret)
+    .update(rawBody ?? '')
     .digest('hex');
-  return hmac === providedSignature;
+  return digest.toLowerCase() === String(providedSignature).toLowerCase();
 }
 
 /**
@@ -185,10 +192,10 @@ app.post('/api/payments/create', async (req, res) => {
  * OxaPay webhook receiver.
  */
 app.post('/api/oxapay/webhook', async (req, res) => {
-  const signature = req.headers['x-oxapay-signature'];
+  const signature = req.headers.hmac || req.headers['x-oxapay-signature'];
   const payload = req.body;
 
-  if (!verifyOxaPaySignature(payload, signature)) {
+  if (!verifyOxaPaySignature(req.rawBody, signature)) {
     return res.status(401).json({ error: 'Invalid signature' });
   }
 
@@ -227,7 +234,7 @@ app.post('/api/oxapay/webhook', async (req, res) => {
   pendingOrders.delete(invoiceId);
   pendingOrders.delete(orderInfo.chatId);
 
-  return res.json({ status: 'ok' });
+  return res.status(200).send('ok');
 });
 
 /**
