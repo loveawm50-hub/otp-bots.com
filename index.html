@@ -1113,6 +1113,16 @@
                 '2MONTH': { amount: 280, currency: 'USD' }
             };
 
+            const PACKAGE_LINKS = {
+                '1DAY': 'https://pay.oxapay.com/19589444',
+                '2DAY': 'https://pay.oxapay.com/18903607',
+                '3DAY': 'https://pay.oxapay.com/11215053',
+                '1WEEK': 'https://pay.oxapay.com/19305497',
+                '2WEEKS': 'https://pay.oxapay.com/16438624',
+                '1MONTH': 'https://pay.oxapay.com/14516288',
+                '2MONTH': 'https://pay.oxapay.com/11041248'
+            };
+
             function openSite() {
                 stopLoadingSequence();
                 deactivateBreachOverlay();
@@ -1330,46 +1340,15 @@
                 }
 
                 purchaseError.classList.remove('active');
-                confirmPurchase.disabled = true;
-                confirmPurchase.textContent = 'Processing...';
-
-                try {
-                    const response = await fetch('/api/payments/create', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            chatId,
-                            packageId,
-                            amount: PACKAGE_MAP[packageId].amount,
-                            currency: PACKAGE_MAP[packageId].currency,
-                            username
-                        })
-                    });
-
-                    if (!response.ok) {
-                        const data = await response.json().catch(() => ({}));
-                        const message = data?.error || 'Failed to create the invoice.';
-                        purchaseError.textContent = message;
-                        purchaseError.classList.add('active');
-                        confirmPurchase.disabled = false;
-                        confirmPurchase.textContent = 'Continue';
-                        return;
-                    }
-
-                    const data = await response.json();
-                    closePurchaseModal();
-                    if (data.paymentUrl) {
-                        window.location.href = data.paymentUrl;
-                    }
-                } catch (submitError) {
-                    console.error('Payment create failed', submitError);
-                    purchaseError.textContent = 'Unable to reach the server. Please try again.';
+                const paymentUrl = PACKAGE_LINKS[packageId];
+                if (!paymentUrl) {
+                    purchaseError.textContent = 'Payment link is not available. Please contact support.';
                     purchaseError.classList.add('active');
-                    confirmPurchase.disabled = false;
-                    confirmPurchase.textContent = 'Continue';
+                    return;
                 }
+
+                closePurchaseModal();
+                window.location.href = paymentUrl;
             }
 
             startButton.addEventListener('click', function(event) {
