@@ -48,6 +48,9 @@ const configValue = (envKey, fallbackPath, defaultValue) => {
 const app = express();
 app.use(express.json());
 
+const CLIENT_ROOT = path.resolve(__dirname, '../../');
+app.use(express.static(CLIENT_ROOT, { extensions: ['html'] }));
+
 const PORT = Number(configValue('PORT', 'port', 4000));
 const PUBLIC_BASE_URL = configValue('PUBLIC_BASE_URL', 'publicBaseUrl');
 
@@ -255,6 +258,10 @@ app.post('/api/telegram/verify-key', (req, res) => {
  */
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });
+});
+
+app.get(/^\/(?!api).*/, (_req, res) => {
+  res.sendFile(path.join(CLIENT_ROOT, 'index.html'));
 });
 
 app.listen(PORT, () => {
