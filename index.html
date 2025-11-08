@@ -96,6 +96,141 @@
             100% { opacity: 0; transform: translateY(-40px); }
         }
 
+        .breach-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            padding: 60px 80px;
+            z-index: 3;
+            pointer-events: none;
+            backdrop-filter: blur(6px);
+        }
+
+        .breach-overlay.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: linear-gradient(140deg, rgba(0, 0, 0, 0.72), rgba(0, 32, 26, 0.68) 55%, rgba(20, 0, 32, 0.72));
+        }
+
+        .breach-window {
+            border: 1px solid rgba(0, 255, 187, 0.28);
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.65);
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.65);
+            overflow: hidden;
+        }
+
+        .breach-window + .breach-window {
+            margin-top: 24px;
+        }
+
+        .breach-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 18px;
+            background: rgba(0, 255, 187, 0.08);
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.18em;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: rgba(0, 255, 187, 0.8);
+        }
+
+        .breach-header::before,
+        .breach-header::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(0, 255, 187, 0), rgba(0, 255, 187, 0.6), rgba(0, 255, 187, 0));
+        }
+
+        .terminal-lines {
+            padding: 20px 22px 26px;
+            font-family: 'Space Grotesk', monospace;
+            color: rgba(0, 255, 187, 0.88);
+            font-size: 14px;
+            line-height: 1.7;
+            max-height: 180px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .terminal-line {
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(-12px);
+            animation: typeIn 0.28s ease forwards;
+        }
+
+        @keyframes typeIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .file-streams {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            padding: 22px;
+            background: rgba(0, 0, 0, 0.58);
+            border-top: 1px solid rgba(0, 255, 187, 0.12);
+            overflow: hidden;
+        }
+
+        .file-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 187, 0.26);
+            background: rgba(0, 255, 187, 0.08);
+            color: rgba(0, 255, 187, 0.78);
+            font-family: 'Space Grotesk', monospace;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            animation: drift 3.4s ease-in-out forwards;
+        }
+
+        .file-chip::before {
+            content: "⬇";
+            font-size: 11px;
+            color: rgba(255, 20, 97, 0.75);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes drift {
+            0% {
+                opacity: 0;
+                transform: translateX(-32px);
+            }
+            15% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            85% {
+                opacity: 1;
+                transform: translateX(6px);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(42px);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+
         .intro-content {
             position: relative;
             z-index: 2;
@@ -150,6 +285,10 @@
             opacity: 0;
             pointer-events: none;
             transform: none;
+        }
+
+        .intro-content.loading-active .loading-sequence {
+            border-color: rgba(255, 20, 97, 0.28);
         }
 
         .loading-sequence {
@@ -616,6 +755,16 @@
         <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1600&q=80" alt="Hacker">
         <div class="intro-gradient"></div>
         <div class="glitch-bars"></div>
+        <div class="breach-overlay" id="breachOverlay">
+            <div class="breach-window">
+                <div class="breach-header">█▓▒ ACTIVE BREACH TRACE</div>
+                <div class="terminal-lines" id="terminalLines"></div>
+            </div>
+            <div class="breach-window">
+                <div class="breach-header">FILE EXFILTRATION ─ LIVE</div>
+                <div class="file-streams" id="fileStreams"></div>
+            </div>
+        </div>
         <div class="intro-content">
             <div class="warning">⚠️ ACCESS VIOLATION DETECTED</div>
             <h1>OTB BOT iA</h1>
@@ -767,6 +916,9 @@
     <audio id="hackerAudio" preload="auto" crossorigin="anonymous">
         <source src="assets/hacker-glitch.wav" type="audio/wav">
     </audio>
+    <audio id="hackerLaughAudio" preload="auto" crossorigin="anonymous">
+        <source src="assets/hacker-laugh.mp3" type="audio/mpeg">
+    </audio>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -774,15 +926,23 @@
             const startButton = document.getElementById('startButton');
             const site = document.getElementById('site');
             const audio = document.getElementById('hackerAudio');
+            const laughAudio = document.getElementById('hackerLaughAudio');
             const introContent = document.querySelector('.intro-content');
             const loadingSequence = document.getElementById('loadingSequence');
             const loadingOutput = document.getElementById('loadingOutput');
+            const breachOverlay = document.getElementById('breachOverlay');
+            const terminalLines = document.getElementById('terminalLines');
+            const fileStreams = document.getElementById('fileStreams');
             const LOADING_DURATION = 10000;
             let fallbackAudio = null;
+            let fallbackLaugh = null;
             let loadingInterval = null;
+            let terminalInterval = null;
+            let fileInterval = null;
 
             function openSite() {
                 stopLoadingSequence();
+                deactivateBreachOverlay();
                 document.body.classList.add('site-open');
                 site.classList.add('active');
                 setTimeout(() => {
@@ -814,6 +974,29 @@
                     });
                 }
                 return Promise.resolve();
+            }
+
+            function playLaughAudio(delay = 800) {
+                if (!laughAudio) {
+                    return;
+                }
+                setTimeout(() => {
+                    laughAudio.currentTime = 0;
+                    laughAudio.volume = 0.55;
+                    laughAudio.muted = false;
+                    const playPromise = laughAudio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(() => {
+                            if (!fallbackLaugh) {
+                                fallbackLaugh = new Audio('assets/hacker-laugh.mp3');
+                            }
+                            fallbackLaugh.currentTime = 0;
+                            fallbackLaugh.volume = 0.55;
+                            fallbackLaugh.muted = false;
+                            return fallbackLaugh.play().catch(() => {});
+                        });
+                    }
+                }, delay);
             }
 
             function generateLoadingLine(progress) {
@@ -854,12 +1037,92 @@
                 }
             }
 
+            const terminalMessages = [
+                'INJECTING MALWARE PAYLOAD // success',
+                'spoofing.mfa.channel → override granted',
+                'exfil.session[07A3] → packets streaming',
+                'VPN relay chaining → 7 hops established',
+                'decrypting voicemail cache → 92% complete',
+                'SESSION KEY NEGOTIATED // rotating cipher',
+                'OTP vault mirroring → delta sync running',
+                'SIM toolkit hijack → baseband lock bypassed',
+                'federated login clone → token hijack success',
+                'keystroke proxy: 3 hosts streaming',
+                'SSH pivot established → tgt node compromised',
+                'data forge // rewriting auth logs',
+                'voice synth core (#9932) → aggression mode',
+                'callback storm queued → 12 targets primed',
+                'log cleaner executing → traces purged'
+            ];
+
+            const filePrefixes = ['BANK', 'CVV', 'LEDGER', 'VOICE', 'TOKEN', 'TRX', 'CLIENT', 'TRACE', 'ACCESS', 'PAYLOAD'];
+            const fileSuffixes = ['.enc', '.dump', '.bin', '.cache', '.sig', '.key', '.pkg', '.dat'];
+
+            function randomChoice(list) {
+                return list[Math.floor(Math.random() * list.length)];
+            }
+
+            function addTerminalLine() {
+                if (!terminalLines) return;
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                line.textContent = `>${terminalMessages[Math.floor(Math.random() * terminalMessages.length)]}`;
+                terminalLines.appendChild(line);
+                while (terminalLines.children.length > 8) {
+                    terminalLines.removeChild(terminalLines.firstChild);
+                }
+            }
+
+            function spawnFileChip() {
+                if (!fileStreams) return;
+                const chip = document.createElement('div');
+                chip.className = 'file-chip';
+                const prefix = randomChoice(filePrefixes);
+                const suffix = randomChoice(fileSuffixes);
+                const code = Math.random().toString(16).slice(2, 6).toUpperCase();
+                chip.textContent = `${prefix}_${code}${suffix}`;
+                fileStreams.appendChild(chip);
+                setTimeout(() => {
+                    chip.remove();
+                }, 3400);
+            }
+
+            function activateBreachOverlay() {
+                if (!breachOverlay) return;
+                breachOverlay.classList.add('active');
+                addTerminalLine();
+                addTerminalLine();
+                terminalInterval = setInterval(addTerminalLine, 700);
+                fileInterval = setInterval(spawnFileChip, 280);
+            }
+
+            function deactivateBreachOverlay() {
+                if (!breachOverlay) return;
+                breachOverlay.classList.remove('active');
+                if (terminalInterval) {
+                    clearInterval(terminalInterval);
+                    terminalInterval = null;
+                }
+                if (fileInterval) {
+                    clearInterval(fileInterval);
+                    fileInterval = null;
+                }
+                if (terminalLines) {
+                    terminalLines.innerHTML = '';
+                }
+                if (fileStreams) {
+                    fileStreams.innerHTML = '';
+                }
+            }
+
             startButton.addEventListener('click', function(event) {
                 event.preventDefault();
                 if (introContent.classList.contains('loading-active')) {
                     return;
                 }
                 playHackerAudio();
+                playLaughAudio();
+                activateBreachOverlay();
                 startLoadingSequence();
                 setTimeout(() => {
                     intro.classList.add('closing');
