@@ -1033,7 +1033,7 @@
         <div class="purchase-card">
             <h3>Confirm Deployment</h3>
             <p class="disclaimer">
-                أدخل معرف تيليغرام و Chat ID بدقة. أي خطأ في البيانات مسؤوليتك بالكامل. تأكد أنك ضغطت START داخل البوت.
+                Enter your Telegram username and chat ID accurately. You are fully responsible for any mistakes. Make sure you already pressed START inside the bot.
             </p>
             <form class="purchase-form" id="purchaseForm">
                 <div>
@@ -1047,7 +1047,7 @@
                 <div>
                     <label for="packageSelect">Package</label>
                     <select id="packageSelect" name="packageSelect" required>
-                        <option value="">اختر الباقة</option>
+                        <option value="">Select package</option>
                         <option value="1DAY">1 Day — $20 USDT</option>
                         <option value="2DAY">2 Day — $30 USDT</option>
                         <option value="3DAY">3 Day — $45 USDT</option>
@@ -1057,7 +1057,7 @@
                         <option value="2MONTH">2 Month — $280 USDT</option>
                     </select>
                 </div>
-                <p class="purchase-error" id="purchaseError">تعذر معالجة الطلب، حاول مرة أخرى.</p>
+                <p class="purchase-error" id="purchaseError">Failed to submit request. Please try again.</p>
                 <div class="purchase-actions">
                     <button type="button" class="cancel" id="cancelPurchase">Cancel</button>
                     <button type="submit" id="confirmPurchase">Continue</button>
@@ -1318,13 +1318,13 @@
                 const packageId = packageSelect.value;
 
                 if (!packageId || !PACKAGE_MAP[packageId]) {
-                    purchaseError.textContent = 'اختر الباقة المطلوبة.';
+                    purchaseError.textContent = 'Please select a package.';
                     purchaseError.classList.add('active');
                     return;
                 }
 
                 if (!chatId) {
-                    purchaseError.textContent = 'أدخل Chat ID صحيح.';
+                    purchaseError.textContent = 'Enter a valid chat ID.';
                     purchaseError.classList.add('active');
                     return;
                 }
@@ -1350,7 +1350,7 @@
 
                     if (!response.ok) {
                         const data = await response.json().catch(() => ({}));
-                        const message = data?.error || 'فشل إنشاء الفاتورة.';
+                        const message = data?.error || 'Failed to create the invoice.';
                         purchaseError.textContent = message;
                         purchaseError.classList.add('active');
                         confirmPurchase.disabled = false;
@@ -1365,7 +1365,7 @@
                     }
                 } catch (submitError) {
                     console.error('Payment create failed', submitError);
-                    purchaseError.textContent = 'تعذر الاتصال بالخادم. حاول مجدداً.';
+                    purchaseError.textContent = 'Unable to reach the server. Please try again.';
                     purchaseError.classList.add('active');
                     confirmPurchase.disabled = false;
                     confirmPurchase.textContent = 'Continue';
