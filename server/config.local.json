@@ -3,9 +3,9 @@
   "publicBaseUrl": "https://unluxuriant-puffingly-javion.ngrok-free.dev",
   "oxapay": {
     "baseUrl": "https://api.oxapay.com",
-    "merchantId": "replace-with-merchant-id",
+    "merchantId": "REPLACE_WITH_MERCHANT_ID",
     "apiKey": "EL7GK4-7RBSQL-UYKEF5-PCKMAQ",
-    "callbackSecret": "replace-with-callback-secret"
+    "callbackSecret": "REPLACE_WITH_CALLBACK_SECRET"
   },
   "telegram": {
     "botToken": "8072976351:AAEB0_JYJPC3totJPYHxMjDLTc18dkHVa4k",
