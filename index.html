@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTB BOT iA — Access Gate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #02040a;
+            --primary: #00ffbb;
+            --accent: #ff1461;
+            --text: #f2f7ff;
+            --muted: rgba(242, 247, 255, 0.65);
+            --glass: rgba(6, 10, 24, 0.78);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+        }
+
+        body.site-open {
+            overflow: auto;
+        }
+
+        a { color: inherit; }
+
+        .intro-overlay {
+            position: fixed;
+            inset: 0;
+            background: #02040a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            overflow: hidden;
+            transition: opacity 0.6s ease;
+        }
+
+        .intro-overlay.closing {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .intro-overlay img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.92;
+            filter: grayscale(30%) contrast(110%);
+        }
+
+        .intro-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(2, 4, 10, 0.85), rgba(2, 4, 10, 0.65), rgba(2, 4, 10, 0.9));
+        }
+
+        .glitch-bars {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                180deg,
+                rgba(0, 255, 187, 0.15) 0px,
+                rgba(0, 255, 187, 0.15) 2px,
+                transparent 2px,
+                transparent 4px
+            );
+            opacity: 0;
+            mix-blend-mode: screen;
+            animation: glitch 3s infinite;
+        }
+
+        .intro-overlay.closing .glitch-bars {
+            opacity: 1;
+            animation: glitch-out 0.6s ease forwards;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes glitch-out {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-40px); }
+        }
+
+        .intro-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 620px;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .intro-content h1 {
+            margin: 0 0 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(32px, 6vw, 68px);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .intro-content p {
+            margin: 0 0 26px;
+            font-size: 18px;
+            line-height: 1.7;
+            color: var(--muted);
+        }
+
+        .start-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 18px 48px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5em;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            text-decoration: none;
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--text);
+            box-shadow: 0 20px 60px rgba(0, 255, 187, 0.25);
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 24px 70px rgba(255, 20, 97, 0.35);
+        }
+
+        .warning {
+            margin-bottom: 26px;
+            font-size: 13px;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: rgba(255, 20, 97, 0.8);
+        }
+
+        .site-container {
+            position: relative;
+            min-height: 100vh;
+            overflow-y: auto;
+            background: radial-gradient(circle at top, rgba(255, 20, 97, 0.08), transparent 45%),
+                        radial-gradient(circle at 70% 30%, rgba(0, 255, 187, 0.08), transparent 40%),
+                        var(--bg);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+        }
+
+        .site-container.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            padding: 100px 8% 140px;
+            display: flex;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url("https://images.unsplash.com/photo-1510511459019-5dda7724fd87?auto=format&fit=crop&w=1600&q=80") center/cover;
+            opacity: 0.12;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 620px;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 255, 187, 0.3);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            font-size: 12px;
+            color: var(--primary);
+            background: rgba(2, 4, 10, 0.6);
+            margin-bottom: 24px;
+        }
+
+        .hero h2 {
+            margin: 0 0 18px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(42px, 8vw, 84px);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            line-height: 1.05;
+        }
+
+        .hero h2 span {
+            color: var(--accent);
+        }
+
+        .hero p {
+            font-size: 20px;
+            line-height: 1.8;
+            color: var(--muted);
+        }
+
+        .hero-deck {
+            position: relative;
+            z-index: 2;
+            padding: 28px;
+            border-radius: 24px;
+            background: rgba(3, 5, 14, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+        }
+
+        .hero-deck h3 {
+            margin: 0 0 14px;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            font-size: 16px;
+            color: var(--primary);
+        }
+
+        .hero-deck ul {
+            margin: 0;
+            padding-left: 18px;
+            line-height: 1.7;
+            color: rgba(240, 246, 255, 0.7);
+        }
+
+        .cta-main {
+            margin-top: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            padding: 17px 42px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--text);
+            box-shadow: 0 16px 50px rgba(0, 255, 187, 0.22);
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .cta-main:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 24px 72px rgba(255, 20, 97, 0.3);
+        }
+
+        .section {
+            padding: 110px 8%;
+        }
+
+        .section-header span {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .section-header h3 {
+            margin: 0 0 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(30px, 5vw, 52px);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .section-header h3 span {
+            color: var(--primary);
+        }
+
+        .section-header p {
+            margin: 0;
+            max-width: 620px;
+            color: var(--muted);
+            line-height: 1.8;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 26px;
+            margin-top: 40px;
+        }
+
+        .pricing-card {
+            background: rgba(4, 6, 14, 0.85);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 32px 26px;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(0, 255, 187, 0.35);
+        }
+
+        .pricing-card h4 {
+            margin: 0;
+            font-size: 24px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .price {
+            margin: 22px 0;
+            font-size: 38px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .pricing-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 24px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .pricing-card a {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            font-size: 11px;
+            text-decoration: none;
+            color: var(--text);
+            transition: background 0.3s ease;
+        }
+
+        .pricing-card a:hover {
+            background: rgba(0, 255, 187, 0.12);
+        }
+
+        footer {
+            padding: 60px 8% 80px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(2, 4, 10, 0.92);
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 12px;
+            letter-spacing: 0.36em;
+            text-transform: uppercase;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 980px) {
+            .hero {
+                flex-direction: column;
+                padding: 120px 7% 100px;
+            }
+
+            .hero-deck {
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .intro-content {
+                padding: 32px 24px;
+            }
+
+            .hero h2 {
+                font-size: clamp(34px, 10vw, 68px);
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .clearance {
+            position: relative;
+            padding: 110px 7%;
+            background: radial-gradient(circle at 10% 10%, rgba(77,255,223,0.1), transparent 60%),
+                        radial-gradient(circle at 90% 80%, rgba(255,46,223,0.08), transparent 55%),
+                        rgba(0,0,0,0.8);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(255,46,223,0.18);
+            overflow: hidden;
+        }
+
+        .clearance::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url("https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=3840&q=80") center/cover;
+            filter: saturate(1.2) contrast(1.05);
+            opacity: 0.25;
+        }
+
+        .clearance-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 620px;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .clearance-content h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(36px, 5vw, 58px);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .clearance p {
+            color: rgba(255, 72, 118, 0.9);
+            line-height: 1.9;
+            font-size: 20px;
+            max-width: 680px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+        }
+
+        .clearance-badges {
+            margin: 38px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .clearance-badge {
+            padding: 10px 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,46,70,0.6);
+            background: rgba(6, 0, 8, 0.55);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(255, 115, 146, 0.85);
+        }
+
+        .clearance a.cta-button {
+            margin-top: 24px;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-text {
+            margin-top: 16px;
+            color: rgba(255, 84, 118, 0.72);
+            line-height: 1.9;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+        }
+
+        .footer-bottom {
+            font-size: 12px;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: rgba(255, 84, 118, 0.6);
+            text-align: center;
+        }
+
+        .footer-bot-cta {
+            margin: 26px auto 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 36px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 255, 187, 0.25);
+            text-transform: uppercase;
+            letter-spacing: 0.32em;
+            font-size: 11px;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            color: var(--text);
+            background: rgba(3, 6, 12, 0.7);
+            box-shadow: 0 16px 48px rgba(0, 255, 187, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .footer-bot-cta:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 22px 60px rgba(255, 46, 97, 0.3);
+        }
+
+        .footer-link-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .footer-link-buttons a {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 28px;
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-transform: uppercase;
+            letter-spacing: 0.28em;
+            font-size: 10px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.85);
+            background: rgba(4, 8, 16, 0.6);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .footer-link-buttons a:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 255, 187, 0.35);
+        }
+    </style>
+</head>
+<body>
+    <div class="intro-overlay" id="intro">
+        <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1600&q=80" alt="Hacker">
+        <div class="intro-gradient"></div>
+        <div class="glitch-bars"></div>
+        <div class="intro-content">
+            <div class="warning">⚠️ ACCESS VIOLATION DETECTED</div>
+            <h1>OTB BOT iA</h1>
+            <p>
+                You are about to trigger a synthetic breach engine. Every signal will be recorded, every hesitation flagged. 
+                If you proceed, you accept full responsibility for the fallout.
+            </p>
+            <a class="start-btn" id="startButton" href="#">START</a>
+        </div>
+    </div>
+
+    <div class="site-container" id="site">
+        <section class="hero">
+            <div class="hero-content">
+                <span class="hero-tag">Signal Forged Syndicate</span>
+                <h2>Voice-Led <span>Infiltration</span></h2>
+                <p>OTB BOT iA runs scripted deception flows across banks, PayPal, Apple Pay, enterprise MFA, and more. Each call is adaptive, each response harvested in real time. No AI hesitation—only relentless extraction.</p>
+                <a class="cta-main" href="https://t.me/airalo_eism" target="_blank" rel="noopener">Enter Command</a>
+            </div>
+            <aside class="hero-deck">
+                <h3>We orchestrate</h3>
+                <ul>
+                    <li>Bank fraud escalation calls (CVV, PIN, SSN capture)</li>
+                    <li>PayPal push/OTP interception</li>
+                    <li>Apple ID &amp; wallet takeover prompts</li>
+                    <li>MFA drain (Okta / Duo / Azure)</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>Service Manifest</span>
+                <h3>Operations <span>menu</span></h3>
+                <p>Choose a run window. All activations include script onboarding, webhook integration, and live monitoring feed.</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h4>1 Day</h4>
+                    <div class="price">$15</div>
+                    <ul>
+                        <li>Rapid activation</li>
+                        <li>Core voice persona</li>
+                        <li>OTP harvest toolkit</li>
+                    </ul>
+                    <a href="https://t.me/airalo_eism" target="_blank" rel="noopener">Deploy</a>
+                </div>
+                <div class="pricing-card">
+                    <h4>2 Day</h4>
+                    <div class="price">$25</div>
+                    <ul>
+                        <li>Script customization</li>
+                        <li>Telegram ops channel</li>
+                        <li>Call analytics feed</li>
+                    </ul>
+                    <a href="https://t.me/airalo_eism" target="_blank" rel="noopener">Deploy</a>
+                </div>
+                <div class="pricing-card">
+                    <h4>3 Day</h4>
+                    <div class="price">$35</div>
+                    <ul>
+                        <li>Adaptive gather loops</li>
+                        <li>Priority webhook routing</li>
+                        <li>OTP / PIN matrix</li>
+                    </ul>
+                    <a href="https://t.me/airalo_eism" target="_blank" rel="noopener">Activate →</a>
+                </div>
+                <article class="pricing-card">
+                    <h3>1 Week</h3>
+                    <div class="pricing-price">$50</div>
+                    <ul class="pricing-details">
+                        <li>Voice rotation suite</li>
+                        <li>VIP script vault</li>
+                        <li>Daily intel briefs</li>
+                    </ul>
+                    <a href="https://t.me/airalo_eism" target="_blank" rel="noopener">Activate →</a>
+                </article>
+                <article class="pricing-card">
+                    <h3>2 Weeks</h3>
+                    <div class="pricing-price">$85</div>
+                    <ul class="pricing-details">
+                        <li>Multilingual deception stack</li>
+                        <li>Anti-trace hardening</li>
+                        <li>Scenario chaining support</li>
+                    </ul>
+                    <a href="https://t.me/airalo_eism" target="_blank" rel="noopener">Activate →</a>
+                </article>
+                <article class="pricing-card">
+                    <h3>1 Month</h3>
+                    <div class="pricing-price">$205</div>
+                    <ul class="pricing-details">
+                        <li>Dedicated AI persona</li>
+                        <li>24/7 signal support</li>
+                        <li>Custom dashboards</li>
+                    </ul>
+                    <a href="https://t.me/airalo_eism" target="_blank" rel="noopener">Activate →</a>
+                </article>
+                <article class="pricing-card">
+                    <h3>2 Month</h3>
+                    <div class="pricing-price">$250</div>
+                    <ul class="pricing-details">
+                        <li>Strategic ops concierge</li>
+                        <li>Voice cloning lab</li>
+                        <li>Shadow network access</li>
+                    </ul>
+                    <a href="https://t.me/airalo_eism" target="_blank" rel="noopener">Activate →</a>
+                </article>
+            </div>
+        </section>
+
+        <section id="clearance" class="clearance">
+            <div class="clearance-content">
+                <span class="section-eyebrow">Blackline Ultimatum</span>
+                <h2>prove you belong</h2>
+                <p>WE DON’T WANT SEEKERS. WE WANT PREDATORS. DROP YOUR HANDLE, YOUR DEAD DROP, YOUR OBJECTIVE. MISS A DETAIL AND WE BLACKLIST YOU PERMANENTLY.</p>
+                <p>EVERY REQUEST IS INTERROGATED. APPROVALS COME WITH CHAINS—ONE KEY, 24 HOURS, UNTRACEABLE. WE DO NOT RESEND.</p>
+                <div class="clearance-badges">
+                    <span class="clearance-badge">IDENTITY: CODE-NAME ONLY</span>
+                    <span class="clearance-badge">CONTACT: ENCRYPTED CHANNEL</span>
+                    <span class="clearance-badge">TARGET: BANK • PAYPAL • ENTERPRISE</span>
+                    <span class="clearance-badge">WINDOW: EXACT UTC</span>
+                </div>
+                <a class="cta-button" href="https://t.me/airalo_eism" target="_blank" rel="noopener">SUBMIT OR VANISH</a>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-top">
+                <div>
+                    <div class="footer-brand">OTB BOT iA</div>
+                    <p class="footer-text">THIS ISN’T CUSTOMER SERVICE. THIS IS A CONTROLLED DETONATION. WE BREAK TRUST, YOU COLLECT THE ASHES. STAY HIDDEN OR GET CUT OUT.</p>
+                    <a class="footer-bot-cta" href="https://t.me/XVVX_OTP8_bot" target="_blank" rel="noopener">LAUNCH BOT</a>
+                    <div class="footer-link-buttons">
+                        <a href="https://t.me/airalo_eism" target="_blank" rel="noopener">ADMIN</a>
+                        <a href="https://t.me/Vipbot20" target="_blank" rel="noopener">CHANNEL</a>
+                        <a href="https://t.me/ia_call" target="_blank" rel="noopener">GROUP</a>
+                        <a href="https://t.me/XVVX_OTP8_bot" target="_blank" rel="noopener">BOT</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2025 OTB BOT iA — WE MONITOR. WE TRACE. WE NEVER FORGET.</div>
+        </footer>
+    </div>
+
+    <audio id="hackerAudio" preload="auto" crossorigin="anonymous">
+        <source src="assets/hacker-glitch.wav" type="audio/wav">
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const intro = document.getElementById('intro');
+            const startButton = document.getElementById('startButton');
+            const site = document.getElementById('site');
+            const audio = document.getElementById('hackerAudio');
+            let fallbackAudio = null;
+
+            function openSite() {
+                document.body.classList.add('site-open');
+                site.classList.add('active');
+                setTimeout(() => {
+                    intro.style.display = 'none';
+                }, 700);
+            }
+
+            if (audio) {
+                audio.volume = 0.7;
+            }
+
+            function playHackerAudio() {
+                if (!audio) {
+                    return;
+                }
+                audio.currentTime = 0;
+                audio.volume = 0.7;
+                audio.muted = false;
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    return playPromise.catch(() => {
+                        if (!fallbackAudio) {
+                            fallbackAudio = new Audio('assets/hacker-glitch.wav');
+                        }
+                        fallbackAudio.currentTime = 0;
+                        fallbackAudio.volume = 0.7;
+                        fallbackAudio.muted = false;
+                        return fallbackAudio.play().catch(() => {});
+                    });
+                }
+                return Promise.resolve();
+            }
+
+            startButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                playHackerAudio();
+                intro.classList.add('closing');
+                site.classList.add('active');
+                document.body.classList.add('site-open');
+                intro.addEventListener('transitionend', openSite, { once: true });
+            });
+        });
+    </script>
+</body>
+</html>
+
