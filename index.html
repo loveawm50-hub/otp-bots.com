@@ -231,6 +231,122 @@
             50% { opacity: 0.35; }
         }
 
+        .purchase-modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(2, 4, 10, 0.82);
+            backdrop-filter: blur(10px);
+            z-index: 120;
+            padding: 24px;
+        }
+
+        .purchase-modal.active {
+            display: flex;
+        }
+
+        .purchase-card {
+            width: min(480px, 100%);
+            background: rgba(3, 6, 12, 0.9);
+            border: 1px solid rgba(0, 255, 187, 0.18);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 32px 90px rgba(0, 0, 0, 0.65);
+        }
+
+        .purchase-card h3 {
+            margin: 0 0 18px;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        .purchase-card p.disclaimer {
+            margin: 0 0 20px;
+            font-size: 12px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255, 20, 97, 0.82);
+            line-height: 1.6;
+        }
+
+        .purchase-form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .purchase-form label {
+            font-size: 13px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.74);
+        }
+
+        .purchase-form input,
+        .purchase-form select {
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(2, 4, 10, 0.8);
+            color: var(--text);
+            font-size: 14px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .purchase-form input::placeholder {
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .purchase-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .purchase-actions button {
+            flex: 1;
+            padding: 14px 0;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(0, 0, 0, 0.6);
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.28em;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .purchase-actions button:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 255, 187, 0.35);
+            box-shadow: 0 20px 60px rgba(0, 255, 187, 0.25);
+        }
+
+        .purchase-actions button.cancel {
+            border-color: rgba(255, 20, 97, 0.35);
+            color: rgba(255, 20, 97, 0.85);
+        }
+
+        .purchase-error {
+            display: none;
+            margin: 6px 0 0;
+            font-size: 12px;
+            letter-spacing: 0.16em;
+            color: rgba(255, 78, 113, 0.92);
+            text-transform: uppercase;
+        }
+
+        .purchase-error.active {
+            display: block;
+        }
+
         .intro-content {
             position: relative;
             z-index: 2;
@@ -814,7 +930,7 @@
                         <li>Core voice persona</li>
                         <li>OTP harvest toolkit</li>
                     </ul>
-                    <a href="https://pay.oxapay.com/19589444" target="_blank" rel="noopener">Deploy</a>
+                    <a href="#" class="pay-trigger" data-package="1DAY" data-amount="20" data-currency="USD">Deploy</a>
                 </div>
                 <div class="pricing-card">
                     <h4>2 Day</h4>
@@ -824,7 +940,7 @@
                         <li>Telegram ops channel</li>
                         <li>Call analytics feed</li>
                     </ul>
-                    <a href="https://pay.oxapay.com/18903607" target="_blank" rel="noopener">Deploy</a>
+                    <a href="#" class="pay-trigger" data-package="2DAY" data-amount="30" data-currency="USD">Deploy</a>
                 </div>
                 <div class="pricing-card">
                     <h4>3 Day</h4>
@@ -834,7 +950,7 @@
                         <li>Priority webhook routing</li>
                         <li>OTP / PIN matrix</li>
                     </ul>
-                    <a href="https://pay.oxapay.com/11215053" target="_blank" rel="noopener">Activate →</a>
+                    <a href="#" class="pay-trigger" data-package="3DAY" data-amount="45" data-currency="USD">Activate →</a>
                 </div>
                 <article class="pricing-card">
                     <h3>1 Week</h3>
@@ -844,7 +960,7 @@
                         <li>VIP script vault</li>
                         <li>Daily intel briefs</li>
                     </ul>
-                    <a href="https://pay.oxapay.com/19305497" target="_blank" rel="noopener">Activate →</a>
+                    <a href="#" class="pay-trigger" data-package="1WEEK" data-amount="60" data-currency="USD">Activate →</a>
                 </article>
                 <article class="pricing-card">
                     <h3>2 Weeks</h3>
@@ -854,7 +970,7 @@
                         <li>Anti-trace hardening</li>
                         <li>Scenario chaining support</li>
                     </ul>
-                    <a href="https://pay.oxapay.com/16438624" target="_blank" rel="noopener">Activate →</a>
+                    <a href="#" class="pay-trigger" data-package="2WEEKS" data-amount="80" data-currency="USD">Activate →</a>
                 </article>
                 <article class="pricing-card">
                     <h3>1 Month</h3>
@@ -864,7 +980,7 @@
                         <li>24/7 signal support</li>
                         <li>Custom dashboards</li>
                     </ul>
-                    <a href="https://pay.oxapay.com/14516288" target="_blank" rel="noopener">Activate →</a>
+                    <a href="#" class="pay-trigger" data-package="1MONTH" data-amount="200" data-currency="USD">Activate →</a>
                 </article>
                 <article class="pricing-card">
                     <h3>2 Month</h3>
@@ -874,7 +990,7 @@
                         <li>Voice cloning lab</li>
                         <li>Shadow network access</li>
                     </ul>
-                    <a href="https://pay.oxapay.com/11041248" target="_blank" rel="noopener">Activate →</a>
+                    <a href="#" class="pay-trigger" data-package="2MONTH" data-amount="280" data-currency="USD">Activate →</a>
                 </article>
             </div>
         </section>
@@ -913,6 +1029,43 @@
         </footer>
     </div>
 
+    <div class="purchase-modal" id="purchaseModal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="purchase-card">
+            <h3>Confirm Deployment</h3>
+            <p class="disclaimer">
+                أدخل معرف تيليغرام و Chat ID بدقة. أي خطأ في البيانات مسؤوليتك بالكامل. تأكد أنك ضغطت START داخل البوت.
+            </p>
+            <form class="purchase-form" id="purchaseForm">
+                <div>
+                    <label for="telegramUsername">Telegram Username</label>
+                    <input id="telegramUsername" name="telegramUsername" type="text" placeholder="@username" required>
+                </div>
+                <div>
+                    <label for="telegramChatId">Telegram Chat ID</label>
+                    <input id="telegramChatId" name="telegramChatId" type="text" placeholder="123456789" required>
+                </div>
+                <div>
+                    <label for="packageSelect">Package</label>
+                    <select id="packageSelect" name="packageSelect" required>
+                        <option value="">اختر الباقة</option>
+                        <option value="1DAY">1 Day — $20 USDT</option>
+                        <option value="2DAY">2 Day — $30 USDT</option>
+                        <option value="3DAY">3 Day — $45 USDT</option>
+                        <option value="1WEEK">1 Week — $60 USDT</option>
+                        <option value="2WEEKS">2 Weeks — $80 USDT</option>
+                        <option value="1MONTH">1 Month — $200 USDT</option>
+                        <option value="2MONTH">2 Month — $280 USDT</option>
+                    </select>
+                </div>
+                <p class="purchase-error" id="purchaseError">تعذر معالجة الطلب، حاول مرة أخرى.</p>
+                <div class="purchase-actions">
+                    <button type="button" class="cancel" id="cancelPurchase">Cancel</button>
+                    <button type="submit" id="confirmPurchase">Continue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <audio id="hackerAudio" preload="auto" crossorigin="anonymous">
         <source src="assets/hacker-glitch.wav" type="audio/wav">
     </audio>
@@ -933,12 +1086,32 @@
             const breachOverlay = document.getElementById('breachOverlay');
             const terminalLines = document.getElementById('terminalLines');
             const fileStreams = document.getElementById('fileStreams');
+            const purchaseModal = document.getElementById('purchaseModal');
+            const purchaseForm = document.getElementById('purchaseForm');
+            const packageSelect = document.getElementById('packageSelect');
+            const telegramUsernameInput = document.getElementById('telegramUsername');
+            const telegramChatInput = document.getElementById('telegramChatId');
+            const purchaseError = document.getElementById('purchaseError');
+            const cancelPurchase = document.getElementById('cancelPurchase');
+            const confirmPurchase = document.getElementById('confirmPurchase');
+            const purchaseTriggers = document.querySelectorAll('.pay-trigger');
             const LOADING_DURATION = 10000;
             let fallbackAudio = null;
             let fallbackLaugh = null;
             let loadingInterval = null;
             let terminalInterval = null;
             let fileInterval = null;
+            let lastSelectedPackage = null;
+
+            const PACKAGE_MAP = {
+                '1DAY': { amount: 20, currency: 'USD' },
+                '2DAY': { amount: 30, currency: 'USD' },
+                '3DAY': { amount: 45, currency: 'USD' },
+                '1WEEK': { amount: 60, currency: 'USD' },
+                '2WEEKS': { amount: 80, currency: 'USD' },
+                '1MONTH': { amount: 200, currency: 'USD' },
+                '2MONTH': { amount: 280, currency: 'USD' }
+            };
 
             function openSite() {
                 stopLoadingSequence();
@@ -1115,6 +1288,90 @@
                 }
             }
 
+            function openPurchaseModal(packageId) {
+                if (!purchaseModal) return;
+                purchaseError.classList.remove('active');
+                confirmPurchase.disabled = false;
+                confirmPurchase.textContent = 'Continue';
+                lastSelectedPackage = packageId || lastSelectedPackage || packageSelect.value;
+                if (packageSelect && packageId) {
+                    packageSelect.value = packageId;
+                }
+                purchaseModal.classList.add('active');
+                purchaseModal.setAttribute('aria-hidden', 'false');
+                setTimeout(() => {
+                    telegramUsernameInput?.focus();
+                }, 50);
+            }
+
+            function closePurchaseModal() {
+                if (!purchaseModal) return;
+                purchaseModal.classList.remove('active');
+                purchaseModal.setAttribute('aria-hidden', 'true');
+            }
+
+            async function handlePurchaseSubmit(event) {
+                event.preventDefault();
+                if (!purchaseForm) return;
+                const username = telegramUsernameInput.value.trim();
+                const chatId = telegramChatInput.value.trim();
+                const packageId = packageSelect.value;
+
+                if (!packageId || !PACKAGE_MAP[packageId]) {
+                    purchaseError.textContent = 'اختر الباقة المطلوبة.';
+                    purchaseError.classList.add('active');
+                    return;
+                }
+
+                if (!chatId) {
+                    purchaseError.textContent = 'أدخل Chat ID صحيح.';
+                    purchaseError.classList.add('active');
+                    return;
+                }
+
+                purchaseError.classList.remove('active');
+                confirmPurchase.disabled = true;
+                confirmPurchase.textContent = 'Processing...';
+
+                try {
+                    const response = await fetch('/api/payments/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            chatId,
+                            packageId,
+                            amount: PACKAGE_MAP[packageId].amount,
+                            currency: PACKAGE_MAP[packageId].currency,
+                            username
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json().catch(() => ({}));
+                        const message = data?.error || 'فشل إنشاء الفاتورة.';
+                        purchaseError.textContent = message;
+                        purchaseError.classList.add('active');
+                        confirmPurchase.disabled = false;
+                        confirmPurchase.textContent = 'Continue';
+                        return;
+                    }
+
+                    const data = await response.json();
+                    closePurchaseModal();
+                    if (data.paymentUrl) {
+                        window.location.href = data.paymentUrl;
+                    }
+                } catch (submitError) {
+                    console.error('Payment create failed', submitError);
+                    purchaseError.textContent = 'تعذر الاتصال بالخادم. حاول مجدداً.';
+                    purchaseError.classList.add('active');
+                    confirmPurchase.disabled = false;
+                    confirmPurchase.textContent = 'Continue';
+                }
+            }
+
             startButton.addEventListener('click', function(event) {
                 event.preventDefault();
                 if (introContent.classList.contains('loading-active')) {
@@ -1131,6 +1388,27 @@
                     intro.addEventListener('transitionend', openSite, { once: true });
                 }, LOADING_DURATION);
             });
+
+            purchaseTriggers.forEach(trigger => {
+                trigger.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const packageId = trigger.dataset.package;
+                    lastSelectedPackage = packageId;
+                    openPurchaseModal(packageId);
+                });
+            });
+
+            cancelPurchase?.addEventListener('click', () => {
+                closePurchaseModal();
+            });
+
+            purchaseModal?.addEventListener('click', (event) => {
+                if (event.target === purchaseModal) {
+                    closePurchaseModal();
+                }
+            });
+
+            purchaseForm?.addEventListener('submit', handlePurchaseSubmit);
         });
     </script>
 </body>
