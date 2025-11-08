@@ -1,0 +1,14 @@
+{
+  "port": 4000,
+  "publicBaseUrl": "https://your-ngrok-subdomain.ngrok.app",
+  "oxapay": {
+    "baseUrl": "https://api.oxapay.com",
+    "merchantId": "replace-with-merchant-id",
+    "apiKey": "EL7GK4-7RBSQL-UYKEF5-PCKMAQ",
+    "callbackSecret": "replace-with-callback-secret"
+  },
+  "telegram": {
+    "botToken": "replace-with-telegram-bot-token"
+  }
+}
+
