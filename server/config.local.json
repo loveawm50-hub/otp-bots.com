@@ -1,6 +1,6 @@
 {
   "port": 4000,
-  "publicBaseUrl": "https://your-ngrok-subdomain.ngrok.app",
+  "publicBaseUrl": "https://unluxuriant-puffingly-javion.ngrok-free.dev",
   "oxapay": {
     "baseUrl": "https://api.oxapay.com",
     "merchantId": "replace-with-merchant-id",
@@ -8,7 +8,8 @@
     "callbackSecret": "replace-with-callback-secret"
   },
   "telegram": {
-    "botToken": "replace-with-telegram-bot-token"
+    "botToken": "8072976351:AAEB0_JYJPC3totJPYHxMjDLTc18dkHVa4k",
+    "adminChatId": "7282588728"
   }
 }
 

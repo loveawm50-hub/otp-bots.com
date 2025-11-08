@@ -4,21 +4,60 @@ import { config as loadEnv } from 'dotenv';
 import TelegramBot from 'node-telegram-bot-api';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 loadEnv();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function loadConfigFile() {
+  const candidates = [
+    path.resolve(__dirname, '../config.local.json'),
+    path.resolve(__dirname, '../config.json'),
+    path.resolve(__dirname, '../config.sample.json')
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      try {
+        const raw = fs.readFileSync(candidate, 'utf-8');
+        return JSON.parse(raw);
+      } catch (error) {
+        console.warn(`⚠️  Failed to parse config file ${candidate}:`, error.message);
+      }
+    }
+  }
+  return {};
+}
+
+const fileConfig = loadConfigFile();
+
+const configValue = (envKey, fallbackPath, defaultValue) => {
+  if (process.env[envKey]) {
+    return process.env[envKey];
+  }
+  if (!fallbackPath) {
+    return defaultValue;
+  }
+  return fallbackPath.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), fileConfig) ?? defaultValue;
+};
 
 const app = express();
 app.use(express.json());
 
-const PORT = process.env.PORT || 4000;
-const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL;
+const PORT = Number(configValue('PORT', 'port', 4000));
+const PUBLIC_BASE_URL = configValue('PUBLIC_BASE_URL', 'publicBaseUrl');
 
-const OXAPAY_API_KEY = process.env.OXAPAY_API_KEY;
-const OXAPAY_MERCHANT_ID = process.env.OXAPAY_MERCHANT_ID;
-const OXAPAY_BASE_URL = process.env.OXAPAY_BASE_URL || 'https://api.oxapay.com';
-const OXAPAY_CALLBACK_SECRET = process.env.OXAPAY_CALLBACK_SECRET;
+const OXAPAY_API_KEY = configValue('OXAPAY_API_KEY', 'oxapay.apiKey');
+const OXAPAY_MERCHANT_ID = configValue('OXAPAY_MERCHANT_ID', 'oxapay.merchantId');
+const OXAPAY_BASE_URL = configValue('OXAPAY_BASE_URL', 'oxapay.baseUrl', 'https://api.oxapay.com');
+const OXAPAY_CALLBACK_SECRET = configValue('OXAPAY_CALLBACK_SECRET', 'oxapay.callbackSecret');
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_BOT_TOKEN = configValue('TELEGRAM_BOT_TOKEN', 'telegram.botToken');
+const ADMIN_CHAT_ID = configValue('ADMIN_CHAT_ID', 'telegram.adminChatId');
 
 if (!TELEGRAM_BOT_TOKEN) {
   console.warn('⚠️  TELEGRAM_BOT_TOKEN not set. Telegram messaging will be disabled.');
