@@ -146,6 +146,57 @@
             box-shadow: 0 24px 70px rgba(255, 20, 97, 0.35);
         }
 
+        .intro-content.loading-active .start-btn {
+            opacity: 0;
+            pointer-events: none;
+            transform: none;
+        }
+
+        .loading-sequence {
+            display: none;
+            margin-top: 26px;
+            padding: 20px 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 255, 187, 0.25);
+            background: rgba(0, 0, 0, 0.55);
+            font-family: 'Space Grotesk', monospace;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--primary);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .loading-sequence.active {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            animation: flicker 1.6s infinite linear;
+        }
+
+        .loading-output {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .loading-subtext {
+            font-size: 12px;
+            color: rgba(255, 20, 97, 0.8);
+            text-align: center;
+            letter-spacing: 0.32em;
+        }
+
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                opacity: 1;
+            }
+            20%, 24%, 55% {
+                opacity: 0.4;
+            }
+        }
+
         .warning {
             margin-bottom: 26px;
             font-size: 13px;
@@ -573,6 +624,10 @@
                 If you proceed, you accept full responsibility for the fallout.
             </p>
             <a class="start-btn" id="startButton" href="#">START</a>
+            <div class="loading-sequence" id="loadingSequence">
+                <div class="loading-output" id="loadingOutput">[000%] INITIALIZING SIGNAL...</div>
+                <div class="loading-subtext">DEEP TRACE ENGAGED</div>
+            </div>
         </div>
     </div>
 
@@ -719,9 +774,15 @@
             const startButton = document.getElementById('startButton');
             const site = document.getElementById('site');
             const audio = document.getElementById('hackerAudio');
+            const introContent = document.querySelector('.intro-content');
+            const loadingSequence = document.getElementById('loadingSequence');
+            const loadingOutput = document.getElementById('loadingOutput');
+            const LOADING_DURATION = 10000;
             let fallbackAudio = null;
+            let loadingInterval = null;
 
             function openSite() {
+                stopLoadingSequence();
                 document.body.classList.add('site-open');
                 site.classList.add('active');
                 setTimeout(() => {
@@ -755,13 +816,57 @@
                 return Promise.resolve();
             }
 
+            function generateLoadingLine(progress) {
+                const percent = String(Math.min(999, Math.floor(progress * 1000))).padStart(3, '0');
+                const charset = '0123456789ABCDEF!@#$%^&*';
+                let line = '';
+                for (let i = 0; i < 28; i++) {
+                    line += charset.charAt(Math.floor(Math.random() * charset.length));
+                }
+                return `[${percent}%] ${line}`;
+            }
+
+            function startLoadingSequence() {
+                if (!loadingSequence || !loadingOutput) {
+                    return;
+                }
+                introContent.classList.add('loading-active');
+                loadingSequence.classList.add('active');
+                const startTime = Date.now();
+                loadingOutput.textContent = '[000%] INITIALIZING SIGNAL...';
+                loadingInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(1, elapsed / LOADING_DURATION);
+                    loadingOutput.textContent = generateLoadingLine(progress || 0.001);
+                }, 120);
+            }
+
+            function stopLoadingSequence() {
+                if (loadingInterval) {
+                    clearInterval(loadingInterval);
+                    loadingInterval = null;
+                }
+                if (loadingSequence) {
+                    loadingSequence.classList.remove('active');
+                }
+                if (introContent) {
+                    introContent.classList.remove('loading-active');
+                }
+            }
+
             startButton.addEventListener('click', function(event) {
                 event.preventDefault();
+                if (introContent.classList.contains('loading-active')) {
+                    return;
+                }
                 playHackerAudio();
-                intro.classList.add('closing');
-                site.classList.add('active');
-                document.body.classList.add('site-open');
-                intro.addEventListener('transitionend', openSite, { once: true });
+                startLoadingSequence();
+                setTimeout(() => {
+                    intro.classList.add('closing');
+                    site.classList.add('active');
+                    document.body.classList.add('site-open');
+                    intro.addEventListener('transitionend', openSite, { once: true });
+                }, LOADING_DURATION);
             });
         });
     </script>
