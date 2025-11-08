@@ -132,13 +132,20 @@ app.post('/api/telegram/register', (req, res) => {
  * Expected payload: { chatId, packageId, amount, currency }
  */
 app.post('/api/payments/create', async (req, res) => {
-  const { chatId, packageId, amount, currency } = req.body || {};
+  const { chatId, packageId, amount, currency, username, displayName } = req.body || {};
   if (!chatId || !packageId || !amount || !currency) {
     return res.status(400).json({ error: 'chatId, packageId, amount and currency are required' });
   }
 
-  if (!pendingOrders.has(String(chatId))) {
-    return res.status(404).json({ error: 'Telegram user not registered. Ask user to start the bot first.' });
+  const chatKey = String(chatId);
+
+  if (!pendingOrders.has(chatKey)) {
+    pendingOrders.set(chatKey, {
+      chatId: chatKey,
+      username,
+      displayName,
+      registeredAt: new Date().toISOString()
+    });
   }
 
   const callbackUrl = `${PUBLIC_BASE_URL}/api/oxapay/webhook`;
