@@ -148,7 +148,7 @@ app.post('/api/payments/create', async (req, res) => {
     });
   }
 
-  const callbackUrl = `${PUBLIC_BASE_URL}/api/oxapay/webhook`;
+  const callbackUrl = `${(PUBLIC_BASE_URL || '').replace(/\/$/, '')}/api/oxapay/webhook`;
 
   try {
     const response = await axios.post(
