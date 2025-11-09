@@ -4,7 +4,7 @@
   "oxapay": {
     "baseUrl": "https://api.oxapay.com",
     "merchantId": "8OUUUQ-RZ9W0H-OQZ9L4-VZK6WX",
-    "apiKey": "8OUUUQ-RZ9W0H-OQZ9L4-VZK6WX",
+    "apiKey": "EL7GK4-7RBSQL-UYKEF5-PCKMAQ",
     "callbackSecret": ""
   },
   "telegram": {
